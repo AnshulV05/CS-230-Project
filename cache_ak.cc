@@ -99,7 +99,7 @@ void CACHE::handle_fill()
         // }
         if (block[set][way].dirty || (block[set][way].valid && inclusiveness == EXCLUSIVE))
         {
-            
+
             // check if the lower level WQ has enough room to keep this writeback request
             if (lower_level)
             {
@@ -177,17 +177,24 @@ void CACHE::handle_fill()
             // Adding the invalidate entry into the previous cache
             if (inclusiveness == INCLUSIVE && (cache_type == IS_L2C || cache_type == IS_LLC))
             {
-
-                upper_level_icache[fill_cpu]->invalidate_entry(block[set][way].full_addr);
-                upper_level_dcache[fill_cpu]->invalidate_entry(block[set][way].full_addr);
+                upper_level_icache[fill_cpu]->invalidate_entry(block[set][way].address);
+                if (cache_type == IS_L2C)
+                {
+                    upper_level_dcache[fill_cpu]->invalidate_entry(block[set][way].address);
+                }
+                if (cache_type == IS_LLC)
+                {
+                    upper_level_dcache[fill_cpu]->upper_level_icache[fill_cpu]->invalidate_entry(block[set][way].address);
+                    upper_level_dcache[fill_cpu]->upper_level_dcache[fill_cpu]->invalidate_entry(block[set][way].address);
+                }
             }
             if (inclusiveness != EXCLUSIVE || (cache_type != IS_L2C && cache_type != IS_LLC))
             {
                 fill_cache(set, way, &MSHR.entry[mshr_index]);
                 // cout<<"alive4"<<endl;
-
             }
-            else{
+            else
+            {
                 // cout<<"alive2"<<endl;
             }
             // RFO marks cache line dirty
@@ -548,8 +555,16 @@ void CACHE::handle_writeback()
                     if (inclusiveness == INCLUSIVE && (cache_type == IS_L2C || cache_type == IS_LLC))
                     {
 
-                        upper_level_icache[writeback_cpu]->invalidate_entry(block[set][way].full_addr);
-                        upper_level_dcache[writeback_cpu]->invalidate_entry(block[set][way].full_addr);
+                        upper_level_icache[writeback_cpu]->invalidate_entry(block[set][way].address);
+                        if (cache_type == IS_L2C)
+                        {
+                            upper_level_dcache[writeback_cpu]->invalidate_entry(block[set][way].address);
+                        }
+                        if (cache_type == IS_LLC)
+                        {
+                            upper_level_dcache[writeback_cpu]->upper_level_icache[writeback_cpu]->invalidate_entry(block[set][way].address);
+                            upper_level_dcache[writeback_cpu]->upper_level_dcache[writeback_cpu]->invalidate_entry(block[set][way].address);
+                        }
                     }
 
                     fill_cache(set, way, &WQ.entry[index]);
@@ -1277,6 +1292,7 @@ int CACHE::check_hit(PACKET *packet)
 
 int CACHE::invalidate_entry(uint64_t inval_addr)
 {
+    // cout<<inval_addr<<endl;
     uint32_t set = get_set(inval_addr);
     int match_way = -1;
 
@@ -1305,7 +1321,7 @@ int CACHE::invalidate_entry(uint64_t inval_addr)
             break;
         }
     }
-
+    cout << match_way << endl;
     return match_way;
 }
 
