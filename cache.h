@@ -178,10 +178,12 @@ class CACHE : public MEMORY {
              get_size(uint8_t queue_type, uint64_t address);
 
     int  check_hit(PACKET *packet),
-         invalidate_entry(uint64_t inval_addr),
          check_mshr(PACKET *packet),
          prefetch_line(uint64_t ip, uint64_t base_addr, uint64_t pf_addr, int prefetch_fill_level, uint32_t prefetch_metadata),
          kpc_prefetch_line(uint64_t base_addr, uint64_t pf_addr, int prefetch_fill_level, int delta, int depth, int signature, int confidence, uint32_t prefetch_metadata);
+    BLOCK* invalidate_entry(uint64_t inval_addr);
+    int my_add_wq(BLOCK *b,int set,int way,int do_fill,int mshr_index,int fill_cpu);
+
 
     void handle_fill(),
          handle_writeback(),

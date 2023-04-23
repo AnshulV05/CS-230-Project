@@ -34,8 +34,9 @@ class MEMORY {
     virtual void increment_WQ_FULL(uint64_t address) = 0;
     virtual uint32_t get_occupancy(uint8_t queue_type, uint64_t address) = 0;
     virtual uint32_t get_size(uint8_t queue_type, uint64_t address) = 0;
-    virtual int invalidate_entry(uint64_t inval_addr){return -1;} // Adding the invalidate function.
+    virtual BLOCK* invalidate_entry(uint64_t inval_addr){cout<<"a1"<<endl;return NULL;} // Adding the invalidate function.
 
+    virtual int my_add_wq(BLOCK *b,int set,int way,int do_fill,int mshr_index,int fill_cpu){return -1;};
     // stats
     uint64_t ACCESS[NUM_TYPES], HIT[NUM_TYPES], MISS[NUM_TYPES], MSHR_MERGED[NUM_TYPES], STALL[NUM_TYPES];
 
