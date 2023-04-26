@@ -1333,8 +1333,8 @@ BLOCK *CACHE::invalidate_entry(uint64_t inval_addr)
             break;
         }
     }
-    cout << match_way << endl;
-    cout<<"HELLO"<<endl;
+//    cout << match_way << endl;
+//    cout<<"HELLO"<<endl;
     if (match_way == -1)
         return NULL;
     return &block[set][match_way];
