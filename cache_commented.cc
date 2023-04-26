@@ -4,12 +4,12 @@
 /** Following changes were made to implement cache policies **/
 
 //  INCLUSIVE POLICY:  
-//  1. When a block is removed from L2 or LLC, block with same address in above caches need to be invalidated (Implemented on line 154)
-//  2. If the above invalidated block is dirty then add that block to lower level cache's writeback queue (Implemented on line 161)
+//  1. When a block is removed from L2 or LLC, block with same address in above caches need to be invalidated (Implemented on line 158)
+//  2. If the above invalidated block is dirty then add that block to lower level cache's writeback queue (Implemented on line 165)
 
 //  EXCLUSIVE POLICY:
-//  1. Whenever a block is evicted it is put into lower level cache's writeback queue (Implemented on line 110)
-//  2. Data from lower level only gets filled in L1 cache not L2 and LLC (Implemented on line 221)
+//  1. Whenever a block is evicted (in handle_fill or handle_writeback) it is put into lower level cache's writeback queue (Implemented on line 112 and line 506)
+//  2. Data from lower level only gets filled in L1 cache not L2 and LLC (Implemented on line 223)
 //  3. When a read hit occurs the block is invalidated from current cache and added to above cache (Implemented on line 722)
 
 
@@ -107,9 +107,9 @@ void CACHE::handle_fill()
         uint8_t do_fill = 1;
 
         // is this dirty?
-        /** OR if victim block is valid and the policy is exclusive **/
+        /** OR if victim block is valid, the policy is exclusive and cache type is L1 **/
         /** Then we need to send a writeback packet to lower level cache **/
-        if (block[set][way].dirty || (block[set][way].valid && inclusiveness == EXCLUSIVE))
+        if (block[set][way].dirty || (block[set][way].valid && inclusiveness == EXCLUSIVE && (cache_type == IS_L1D || cache_type == IS_L1I)))
         {
             // check if the lower level WQ has enough room to keep this writeback request
             if (lower_level)
@@ -503,7 +503,7 @@ void CACHE::handle_writeback()
                 uint8_t do_fill = 1;
 
                 // is this dirty?
-                if (block[set][way].dirty)
+                if (block[set][way].dirty || (block[set][way].valid && inclusiveness == EXCLUSIVE))
                 {
 
                     // check if the lower level WQ has enough room to keep this writeback request
